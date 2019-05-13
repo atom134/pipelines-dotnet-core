@@ -9,7 +9,7 @@ trigger:
 pool:
   vmImage: 'windows-2019'    #agent in 'AzureDevOps' pool
 #  name: vm-epam               #agent in 'epam-vm' pool
-# add secondary deployment pool
+# add secondary deployment pool 2
 
 variables:
   buildConfiguration: 'Release'
