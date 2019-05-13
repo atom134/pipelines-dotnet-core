@@ -1,0 +1,48 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-2019'    #agent in 'AzureDevOps' pool
+#  name: vm-epam               #agent in 'epam-vm' pool
+
+variables:
+  buildConfiguration: 'Release'
+
+# Build the project
+steps:
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    command: build
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+  enabled: true
+
+# Build the project via Powershell
+- powershell: |
+   $project_files = Get-ChildItem -Path "$(Build.SourcesDirectory)" -Include "*.csproj" -Recurse
+   $dotnet_path = "$env:ProgramFiles\dotnet\dotnet.exe"
+   $project_files | ForEach-Object -Process { & $dotnet_path build $_.FullName '--configuration' $(buildConfiguration) }
+  displayName: 'PowerShell Script to execute dotnet build'
+  enabled: false
+
+# Publish artifacts that were built to the artifact staging directory
+- task: DotNetCoreCLI@2
+  displayName: Publish
+  inputs:
+    command: publish
+    projects: '**/*.csproj'
+    arguments: '--output $(Build.ArtifactStagingDirectory)'
+    publishWebProjects: false
+    zipAfterPublish: true
+
+# Publish artifacts from the artifact staging directory to Azure Pipelines
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: $(Build.ArtifactStagingDirectory)
+    artifactName: MyBuildArtifacts
