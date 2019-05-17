@@ -26,6 +26,9 @@ else {
                         Throw "HTTPs binding exists for site '$(SiteName)' on port '$(HTTPsBindingPort)' with certificate with Subject other than '$(CertificateSubject)'. Please, choose free appropriate tcp port that is not used by  any site and run script again."
                     }    
                 }
+                else {
+                    Throw "HTTPs binding exists for site '$(SiteName)' on port '$(HTTPsBindingPort)' with certificate with Subject other than '$(CertificateSubject)'. Please, choose free appropriate tcp port that is not used by  any site and run script again."
+                }
             }
             else {
                 Throw "HTTP binding exists for site '$(SiteName)' on port '$(HTTPsBindingPort)'. Please, choose free appropriate tcp port that is not used by any site and run script again."
