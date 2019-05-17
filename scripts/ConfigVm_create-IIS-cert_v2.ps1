@@ -1,9 +1,10 @@
 if ($PSVersionTable.PSVersion.Major -lt 3) {
-    Throw "Powershell version that is used is 2 or lower, but only versions that grater or equal 3 are supported."
+    Write-Warning -Message "Powershell version that is used is 2 or lower, but only versions that grater or equal 3 are supported."
 }
 else {
     if (!(Get-Module -Name WebAdministration -ListAvailable)) {
-        Throw "Script requires WebAdministration Powershell module to be installed. Further script execution will be skipped."
+        Write-Warning -Message "Script requires WebAdministration Powershell module to be installed. Further script execution will be skipped."
+        Return
     }
     Import-Module -Name WebAdministration
     
@@ -12,7 +13,8 @@ else {
     if ($port_binding) {
         $app_port_binding = $port_binding | Where-Object -FilterScript { $_.ItemXPath -match "\@name\=\'$(SiteName)\'" }
         if (!$app_port_binding) {
-            Throw "Port binding exists on port '$(HTTPsBindingPort)' for site other than '$(SiteName)'. Please, choose free appropriate tcp port that is not used by HTTP\HTTPs binding of any site and run script again."
+            Write-Warning -Message "Port binding exists on port '$(HTTPsBindingPort)' for site other than '$(SiteName)'. Please, choose free appropriate tcp port that is not used by HTTP\HTTPs binding of any site and run script again. Further script execution will be skipped."
+            Return
         }
         else {
             $app_https_binding = $app_port_binding | Where-Object -FilterScript { $_.protocol -eq "https" }
@@ -21,17 +23,21 @@ else {
                     $app_https_binding_with_cert = $app_https_binding | Where-Object -FilterScript { $_.certificateHash -eq $app_cert.Thumbprint }
                     if ($app_https_binding_with_cert) {
                         Write-Warning -Message "HTTPs binding for site '$(SiteName)' on port '$(HTTPsBindingPort)' with certificate with Subject '$(CertificateSubject)' already exists."
+                        Return
                     }
                     else {
-                        Throw "HTTPs binding exists for site '$(SiteName)' on port '$(HTTPsBindingPort)' with certificate with Subject other than '$(CertificateSubject)'. Please, choose free appropriate tcp port that is not used by  any site and run script again."
+                        Write-Warning -Message "HTTPs binding exists for site '$(SiteName)' on port '$(HTTPsBindingPort)' with certificate with Subject other than '$(CertificateSubject)'. Please, choose free appropriate tcp port that is not used by  any site and run script again. Further script execution will be skipped."
+                        Return
                     }    
                 }
                 else {
-                    Throw "HTTPs binding exists for site '$(SiteName)' on port '$(HTTPsBindingPort)' with certificate with Subject other than '$(CertificateSubject)'. Please, choose free appropriate tcp port that is not used by  any site and run script again."
+                    Write-Warning -Message "HTTPs binding exists for site '$(SiteName)' on port '$(HTTPsBindingPort)' with certificate with Subject other than '$(CertificateSubject)'. Please, choose free appropriate tcp port that is not used by  any site and run script again. Further script execution will be skipped."
+                    Return
                 }
             }
             else {
-                Throw "HTTP binding exists for site '$(SiteName)' on port '$(HTTPsBindingPort)'. Please, choose free appropriate tcp port that is not used by any site and run script again."
+                Write-Warning -Message "HTTP binding exists for site '$(SiteName)' on port '$(HTTPsBindingPort)'. Please, choose free appropriate tcp port that is not used by any site and run script again. Further script execution will be skipped."
+                Return
             }
         }
     }
@@ -48,7 +54,8 @@ else {
                 $app_cert | New-Item -Path (Join-Path -Path 'IIS:\SslBindings' -ChildPath "0.0.0.0!$(HTTPsBindingPort)")
             }
             else {
-                Throw "Script does not support generation of self-signed certificate for Windows versions older than Windows Server 2012. Please, use custom function written by Vadims Podans from https://gallery.technet.microsoft.com/scriptcenter/Self-signed-certificate-5920a7c6"
+                Write-Warning -Message "Script does not support generation of self-signed certificate for Windows versions older than Windows Server 2012. Please, use custom function written by Vadims Podans from https://gallery.technet.microsoft.com/scriptcenter/Self-signed-certificate-5920a7c6"
+                Return
             }
         }
     }
